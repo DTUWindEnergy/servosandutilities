@@ -147,7 +147,11 @@ module generator_servo_mod
       Qshaft = array1(4)
       omegagen = array1(3)
       ! Reference mech. torque
-      mech_Qgref = min(Qgref/generatorvar%eta, generatorvar%max_lss_torque)
+      if(generatorvar%eta==0.0) then
+          mech_Qgref = generatorvar%max_lss_torque
+      else
+          mech_Qgref = min(Qgref/generatorvar%eta, generatorvar%max_lss_torque)
+      endif
       ! Low-pass filter generator speed (LSS)
       Qgdummy = lowpass2orderfilt(generatorvar%deltat, generatorvar%stepno, lowpass2ordergen, mech_Qgref)
       mech_Qg = Qgdummy(1)
