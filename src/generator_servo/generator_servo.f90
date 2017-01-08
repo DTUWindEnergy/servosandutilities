@@ -3,7 +3,7 @@ module generator_servo_mod
    implicit none
    contains
 !**************************************************************************************************
-   subroutine init_generator_servo(array1,array2)
+   subroutine init_generator_servo(array1,array2) bind(c,name="init_generator_servo")
       implicit none
       !DEC$ IF .NOT. DEFINED(__LINUX__)
       !DEC$ ATTRIBUTES DLLEXPORT, C, ALIAS:'init_generator_servo'::init_generator_servo
@@ -39,7 +39,7 @@ module generator_servo_mod
       array2 = 0.0_mk
    end subroutine init_generator_servo
 !**************************************************************************************************
-   subroutine init_generator_servo_var_eta(array1,array2)
+   subroutine init_generator_servo_var_eta(array1,array2) bind(c,name="init_generator_servo_var_eta")
       implicit none
       !DEC$ IF .NOT. DEFINED(__LINUX__)
       !DEC$ ATTRIBUTES DLLEXPORT, C, ALIAS:'init_generator_servo_var_eta'::init_generator_servo_var_eta
@@ -147,7 +147,11 @@ module generator_servo_mod
       Qshaft = array1(4)
       omegagen = array1(3)
       ! Reference mech. torque
-      mech_Qgref = min(Qgref/generatorvar%eta, generatorvar%max_lss_torque)
+      if(generatorvar%eta==0.0) then
+          mech_Qgref = generatorvar%max_lss_torque
+      else
+          mech_Qgref = min(Qgref/generatorvar%eta, generatorvar%max_lss_torque)
+      endif
       ! Low-pass filter generator speed (LSS)
       Qgdummy = lowpass2orderfilt(generatorvar%deltat, generatorvar%stepno, lowpass2ordergen, mech_Qgref)
       mech_Qg = Qgdummy(1)
