@@ -1,8 +1,9 @@
 module generator_servo_mod
    use generator_servo_fcns
+   implicit none
    contains
 !**************************************************************************************************
-   subroutine init_generator_servo(array1,array2)
+   subroutine init_generator_servo(array1,array2) bind(c,name="init_generator_servo")
       use write_version_mod
       implicit none
       !DEC$ IF .NOT. DEFINED(__LINUX__)
@@ -41,7 +42,7 @@ module generator_servo_mod
       array2 = 0.0_mk
    end subroutine init_generator_servo
 !**************************************************************************************************
-   subroutine init_generator_servo_var_eta(array1,array2)
+   subroutine init_generator_servo_var_eta(array1,array2) bind(c,name="init_generator_servo_var_eta")
       implicit none
       !DEC$ IF .NOT. DEFINED(__LINUX__)
       !DEC$ ATTRIBUTES DLLEXPORT, C, ALIAS:'init_generator_servo_var_eta'::init_generator_servo_var_eta
@@ -107,7 +108,7 @@ module generator_servo_mod
       return
    end subroutine init_generator_servo_var_eta
 !**************************************************************************************************
-   subroutine update_generator_servo(array1, array2)
+   subroutine update_generator_servo(array1, array2) bind(c,name="update_generator_servo")
       implicit none
       !DEC$ IF .NOT. DEFINED(__LINUX__)
       !DEC$ ATTRIBUTES DLLEXPORT, C, ALIAS:'update_generator_servo'::update_generator_servo
@@ -119,8 +120,7 @@ module generator_servo_mod
       !    2: dll inpvec 1 1                         ; Electrical torque reference [Nm]
       !    3: constraint bearing1 shaft_rot 1 only 2 ; Generator LSS speed [rad/s]   
       !....4: mbdy momentvec shaft 1 1 shaft # only 3;
-      !
-      ! Output array2 contains
+      !  ! Output array2 contains
       !
       !    1: Generator LSS torque [Nm]
       !    2: Electrical generator power [W]
@@ -149,7 +149,11 @@ module generator_servo_mod
       Qshaft = array1(4)
       omegagen = array1(3)
       ! Reference mech. torque
-      mech_Qgref = min(Qgref/generatorvar%eta, generatorvar%max_lss_torque)
+      if(generatorvar%eta==0.0) then
+          mech_Qgref = generatorvar%max_lss_torque
+      else
+          mech_Qgref = min(Qgref/generatorvar%eta, generatorvar%max_lss_torque)
+      endif
       ! Low-pass filter generator speed (LSS)
       Qgdummy = lowpass2orderfilt(generatorvar%deltat, generatorvar%stepno, lowpass2ordergen, mech_Qgref)
       mech_Qg = Qgdummy(1)
@@ -177,7 +181,12 @@ module generator_servo_mod
       end select
     ! Output
       if ((time.gt.TimeGridLoss).and.(TimeGridLoss.gt.0.d0)) then
-         array2 = 0.d0
+         array2(1) = 0.d0
+         array2(2) = 0.d0
+         array2(3) = 0.d0
+         array2(4) = 0.d0
+         array2(5) = 0.d0
+         array2(6) = 0.d0
          array2(8) = 1.d0
       else
          array2(1) = -mech_Qg
