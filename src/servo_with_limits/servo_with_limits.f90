@@ -1,4 +1,4 @@
-  subroutine init_servo_with_limits(array1,array2)
+  subroutine init_servo_with_limits(array1,array2) bind(c,name="init_servo_with_limits")
   use servo_with_limits_data
   use write_version_mod
   implicit none
@@ -49,7 +49,7 @@
   return
   end subroutine init_servo_with_limits
 !***********************************************************************
-  subroutine update_servo_with_limits(array1,array2)
+  subroutine update_servo_with_limits(array1,array2) bind(c,name="update_servo_with_limits")
   use servo_with_limits_data
 !  use imsl
   implicit none

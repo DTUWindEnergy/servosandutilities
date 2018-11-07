@@ -1,4 +1,4 @@
-  subroutine init_mech_brake(array1,array2)
+  subroutine init_mech_brake(array1,array2) bind(c,name="init_mech_brake")
   use mech_brake_fcns
   use write_version_mod
   implicit none
@@ -28,7 +28,7 @@
   return
   end subroutine init_mech_brake
 !***********************************************************************
-  subroutine update_mech_brake(array1,array2)
+  subroutine update_mech_brake(array1,array2) bind(c,name="update_mech_brake")
   use mech_brake_fcns
 !  use imsl
   implicit none
