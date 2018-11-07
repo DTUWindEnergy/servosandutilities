@@ -1,10 +1,43 @@
 module flap_servo_mod
    !
-   !   Control Dll of type 2:
-   ! Dll for accounting for flap servo actions, delay given by first order low pass filter (for now)
-   ! Could be used either following cyclic control signal, or to assign steps
+   ! Control Dll of type 2:
+   ! Dll for accounting for flap servo actions, delay given by first order low pass filter.
+   ! Could be used either following control signals, or assigning prescribed actions.
    !
-   ! v.01, 31/10/2014, leob
+   ! v.1.0, 26/04/2018, TKBA
+   !
+   ! ******************************* example htc input *******************************
+   ! ; - Flap Servo;              ; 
+   ! begin type2_dll; 
+   ! name flap_servo ; 
+   ! filename  ./control/flap_servo.dll ; 
+   ! dll_subroutine_init init_flap_servo ; 
+   ! dll_subroutine_update update_flap_servo ; 
+   ! arraysizes_init    3  1 ; 
+   ! arraysizes_update  4  3 ; 
+   ! begin init ; 
+   ! constant 1   0.1;   ; Flap actuator 1st order time constant [s]
+   ! constant 2  +10.0;	 ; Max deflection [deg]
+   ! constant 3  -10.0;	 ; Min deflection [deg]
+   ! end init ; 
+   ! ;
+   ! ; -- Data passed TO .dll: -- ;	
+   ! begin output; 
+   ! 	general time      ; general time [s]       
+   ! dll inpvec 6 1	; Ref. flap signal bl.1 fl.1 [deg]
+   ! dll inpvec 6 2	; Ref. flap signal bl.2 fl.1 [deg]
+   ! dll inpvec 6 3	; Ref. flap signal bl.3 fl.1 [deg]
+   ! ; general constant 10;
+   ! ; general constant 10;
+   ! ; general constant 10;
+   ! end output; 
+   ! begin actions;    
+   ! aero beta 1 1;
+   ! aero beta 2 1;
+   ! aero beta 3 1;  
+   ! end actions;                      
+   ! end type2_dll; 
+   ! *********************************************************************************
    !
    use misc_mod 
    implicit none
@@ -43,7 +76,7 @@ module flap_servo_mod
       ! Input array1 must contains
       !
       !    1: general time [s]
-      !    2..4: Flap signals to filter, either from ctrl or step [deg]
+      !    2..4: Flap signals to filter, either from controller or prescribed signals [deg]
       !
       ! Output array2 contains
       !
